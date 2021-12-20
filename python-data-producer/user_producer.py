@@ -1,52 +1,31 @@
-import sqlalchemy as db
-from sqlalchemy import text
+import requests
 from faker import Faker
 
-fake = Faker()
+def populate_user(auth, mem_ids):
+    fake = Faker()
+    register_url = 'http://localhost:8070/users/registration'
 
-# specify db config
-config = {
-    'host' : 'localhost',
-    'port' : 3307,
-    'user' : 'user',
-    'password' : 'pwd',
-    'database' : 'alinedb'
-}
+    user_entries = len(mem_ids)
+    for i in range(user_entries):
+        register_info = {
+            "role" : fake.random_element(elements=('admin','member')),
+            "username" : fake.user_name(),
+            "password" : fake.lexify('Aa1!?????'),
+            "firstName" : fake.first_name(),
+            "lastName" : fake.last_name(),
+            "email" : fake.email(),
+            "phone" : fake.numerify('(###)-###-####'),
+            "membershipId" : mem_ids[i],
+            "lastFourOfSSN" : str(i+1)*4
+        }
+        reg_user = requests.post(register_url, json=register_info, headers=auth)
+        # print(reg_user.text)
 
-db_user = config.get('user')
-db_pwd = config.get('password')
-db_host = config.get('host')
-db_port = config.get('port')
-db_name = config.get('database')
-
-# specify connection string
-connection_str = f'mysql+pymysql://{db_user}:{db_pwd}@{db_host}:{db_port}/{db_name}'
-# connect to database
-engine = db.create_engine(connection_str)
-connection = engine.connect()
-
-# optional clear table entries
-clear = True
-if clear:
-    connection.execute(text('DELETE FROM user'))
-    connection.execute(text('ALTER TABLE user AUTO_INCREMENT = 1'))
-
-# create and insert X entries
-num_entries = 10
-for i in range(num_entries):
-    # define values to be inserted into user table
-    role = fake.word() # varchar(31)
-    # id is bigInt auto-inc
-    enabled = 0 # bit(1)
-    password = fake.word() # varchar(255)
-    username = fake.user_name() # varchar(255)
-    email = fake.email() # varchar(255) nullable
-    first_name = fake.first_name() # varchar(255) nullable
-    last_name = fake.last_name() # varchar(255) nullable
-    phone = fake.phone_number() # varchar(255) nullable
-    # member_id is restricted foreign key from table 'member'
-
-    # create and execute insert string
-    user_ins = text("INSERT INTO user (role, enabled, password, username, email, first_name, last_name, phone) VALUES (:role, :enabled, :password, :username, :email, :first_name, :last_name, :phone)")
-    connection.execute(user_ins, role=role, enabled=enabled, password=password, username=username, email=email, first_name=first_name, last_name=last_name, phone=phone)
-
+# login_info = {
+#     'username' : 'adminUser',
+#     'password' : 'Password*8'
+# }
+# login_response = requests.post('http://localhost:8070/login', json=login_info)
+# bearer_token = login_response.headers['Authorization']
+# auth = {'Authorization' : bearer_token}
+# populate_user(auth)
