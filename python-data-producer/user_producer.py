@@ -1,13 +1,17 @@
 import requests
+import logging
+import os
 from faker import Faker
 
 def populate_user(auth, mem_ids):
+    logging.basicConfig(level=logging.INFO, filename="aline_files/core-my/docker-data/aline_log.log", filemode='a', format='%(process)d - [%(levelname)s ] - %(message)s')
     fake = Faker()
-    register_url = 'http://localhost:8070/users/registration'
+    # user_url = 'http://localhost:8070/users/registration'
+    user_url = f"{os.environ.get('USER_URL')}/users/registration"
 
     user_entries = len(mem_ids)
     for i in range(user_entries):
-        register_info = {
+        user_info = {
             "role" : fake.random_element(elements=('admin','member')),
             "username" : fake.user_name(),
             "password" : fake.lexify('Aa1!?????'),
@@ -16,16 +20,13 @@ def populate_user(auth, mem_ids):
             "email" : fake.email(),
             "phone" : fake.numerify('(###)-###-####'),
             "membershipId" : mem_ids[i],
-            "lastFourOfSSN" : str(i+1)*4
+            "lastFourOfSSN" : str((i%10)+1)*4
         }
-        reg_user = requests.post(register_url, json=register_info, headers=auth)
-        # print(reg_user.text)
+        logging.info(f'Trying to post {user_info}')
+        try:
+            reg_user = requests.post(user_url, json=user_info, headers=auth)
+            logging.info('User posted')
+        except Exception as e:
+            logging.error(f'Error entering user: ', exc_info=True)
 
-# login_info = {
-#     'username' : 'adminUser',
-#     'password' : 'Password*8'
-# }
-# login_response = requests.post('http://localhost:8070/login', json=login_info)
-# bearer_token = login_response.headers['Authorization']
-# auth = {'Authorization' : bearer_token}
-# populate_user(auth)
+print('', end='')
