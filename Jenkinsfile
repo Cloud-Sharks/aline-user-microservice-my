@@ -5,7 +5,6 @@ pipeline{
     environment{
         //set env vars
         AWS_ID = credentials('AWS_ID')
-        COMMIT_HASH = "${sh(script: 'git rev-parse --short HEAD', returnStdout: true).trim()}"
         SERVICE_NAME = 'user-ms'
         REGION = 'us-east-1'
         APP_NAME = 'my-user-microservice'
