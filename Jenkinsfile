@@ -44,7 +44,7 @@ pipeline{
         stage('Push Image'){
             steps{
                 //push image to cloud
-                sh'aws ecr get-login-password --region $AWS_REGION | docker login --username AWS --password-stdin $AWS_ID.dkr.ecr.$AWS_REGION.amazonaws.com'
+                sh'aws ecr get-login-password --region $REGION | docker login --username AWS --password-stdin $AWS_ID.dkr.ecr.$REGION.amazonaws.com'
                 sh'docker push ${AWS_ID}.dkr.ecr.${REGION}.amazonaws.com/${APP_NAME}:${COMMIT_HASH}'
             }
         }
