@@ -4,7 +4,8 @@ pipeline{
 
     environment{
         //set env vars
-        COMMIT_HASH = "initial"
+        AWS_ID = credentials('AWS_ID')
+        COMMIT_HASH = "${sh(script: 'git rev-parse --short HEAD', returnStdout: true).trim()}"
         SERVICE_NAME = 'user-ms'
         REGION = 'us-east-1'
         APP_NAME = 'my-user-microservice'
@@ -44,6 +45,7 @@ pipeline{
         stage('Push Image'){
             steps{
                 //push image to cloud
+                sh'aws ecr get-login-password --region $AWS_REGION | docker login --username AWS --password-stdin $AWS_ID.dkr.ecr.$AWS_REGION.amazonaws.com'
                 sh'docker push ${AWS_ID}.dkr.ecr.${REGION}.amazonaws.com/${APP_NAME}:${COMMIT_HASH}'
             }
         }
