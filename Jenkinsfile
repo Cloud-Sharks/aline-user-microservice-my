@@ -20,12 +20,28 @@ pipeline{
                 sh'git submodule update'
             }
         }
-        stage('Test'){
+        stage('SonarQube Analysis'){
             steps{
-                //run project tests
-                sh'mvn clean test'
+                //test with SonarQube
+                withSonarQubeEnv('SonarQubeServer'){
+                    sh'mvn clean test sonar:sonar'
+                }
             }
         }
+        stage('QualityGate'){
+            steps{
+                //wait for quality response
+                timeout(time: 10, unit: 'MINUTES'){
+                    waitForQualityGate abortPipeline: true
+                }
+            }
+        }
+        // stage('Test'){
+        //     steps{
+        //         //run project tests
+        //         sh'mvn clean test'
+        //     }
+        // }
         stage('Package'){
             steps{
                 //package project
