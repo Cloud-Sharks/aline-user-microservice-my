@@ -5,6 +5,8 @@ pipeline{
     environment{
         //set env vars
         AWS_ID = credentials('AWS_ID')
+        ECR_REGION = 'us-east-1'
+        APP_ENV = 'dev'
         SERVICE_NAME = 'user-ms'
         APP_NAME = 'my-user-microservice'
         ORGANIZATION = 'Aline-Financial-MY'
@@ -36,12 +38,6 @@ pipeline{
                 }
             }
         }
-        // stage('Test'){
-        //     steps{
-        //         //run project tests
-        //         sh'mvn clean test'
-        //     }
-        // }
         stage('Package'){
             steps{
                 //package project
@@ -55,8 +51,8 @@ pipeline{
             steps{
                 //build docker image
                 sh'docker build . -t ${APP_NAME}/${APP_ENV}/${SERVICE_NAME}:${COMMIT_HASH}'
-                sh'docker tag ${APP_NAME}/${APP_ENV}/${SERVICE_NAME}:${COMMIT_HASH} ${AWS_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com/${APP_NAME}:${COMMIT_HASH}'
-                sh'docker tag ${APP_NAME}/${APP_ENV}/${SERVICE_NAME}:${COMMIT_HASH} ${AWS_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com/${APP_NAME}:latest'
+                sh'docker tag ${APP_NAME}/${APP_ENV}/${SERVICE_NAME}:${COMMIT_HASH} ${AWS_ID}.dkr.ecr.${ECR_REGION}.amazonaws.com/${APP_NAME}:${COMMIT_HASH}'
+                sh'docker tag ${APP_NAME}/${APP_ENV}/${SERVICE_NAME}:${COMMIT_HASH} ${AWS_ID}.dkr.ecr.${ECR_REGION}.amazonaws.com/${APP_NAME}:latest'
             }
         }
         stage('Push Image'){
@@ -65,9 +61,11 @@ pipeline{
             }
             steps{
                 //push image to cloud
-                sh'aws ecr get-login-password --region $AWS_REGION | docker login --username AWS --password-stdin $AWS_ID.dkr.ecr.$AWS_REGION.amazonaws.com'
-                sh'docker push ${AWS_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com/${APP_NAME}:${COMMIT_HASH}'
-                sh'docker push ${AWS_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com/${APP_NAME}:latest'
+                withCredentials([[$class: 'AmazonWebServicesCredentialsBinding', credentialsId: "cloudshark-Mark", accessKeyVariable: 'AWS_ACCESS_KEY_ID', secretKeyVariable: 'AWS_SECRET_ACCESS_KEY']]){
+                    sh'aws ecr get-login-password --region $ECR_REGION | docker login --username AWS --password-stdin $AWS_ID.dkr.ecr.$ECR_REGION.amazonaws.com'
+                    sh'docker push ${AWS_ID}.dkr.ecr.${ECR_REGION}.amazonaws.com/${APP_NAME}:${COMMIT_HASH}'
+                    sh'docker push ${AWS_ID}.dkr.ecr.${ECR_REGION}.amazonaws.com/${APP_NAME}:latest'
+                }
             }
         }
         //deploy stage
