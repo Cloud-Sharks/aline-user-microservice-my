@@ -28,7 +28,7 @@ pipeline{
             steps{
                 //scan with SonarQube
                 withSonarQubeEnv('SonarQubeServer'){
-                    sh'mvn sonar:sonar'
+                    sh'mvn clean verify sonar:sonar'
                 }
             }
         }
