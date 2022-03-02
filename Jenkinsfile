@@ -6,11 +6,7 @@ pipeline{
         //set env vars
         AWS_ID = credentials('AWS_ID')
         ECR_REGION = 'us-east-1'
-        APP_ENV = 'dev'
-        SERVICE_NAME = 'user-ms'
         APP_NAME = 'my-user-microservice'
-        ORGANIZATION = 'Aline-Financial-MY'
-        PROJECT_NAME = 'aline-user-microservice-my'
     }
 
     stages{
@@ -22,11 +18,17 @@ pipeline{
                 sh'git submodule update'
             }
         }
+        stage('Test'){
+            steps{
+                //run test cases
+                sh'mvn clean test'
+            }
+        }
         stage('SonarQube Analysis'){
             steps{
-                //test with SonarQube
+                //scan with SonarQube
                 withSonarQubeEnv('SonarQubeServer'){
-                    sh'mvn clean test sonar:sonar'
+                    sh'mvn sonar:sonar'
                 }
             }
         }
@@ -50,9 +52,8 @@ pipeline{
             }
             steps{
                 //build docker image
-                sh'docker build . -t ${APP_NAME}/${APP_ENV}/${SERVICE_NAME}:${COMMIT_HASH}'
-                sh'docker tag ${APP_NAME}/${APP_ENV}/${SERVICE_NAME}:${COMMIT_HASH} ${AWS_ID}.dkr.ecr.${ECR_REGION}.amazonaws.com/${APP_NAME}:${COMMIT_HASH}'
-                sh'docker tag ${APP_NAME}/${APP_ENV}/${SERVICE_NAME}:${COMMIT_HASH} ${AWS_ID}.dkr.ecr.${ECR_REGION}.amazonaws.com/${APP_NAME}:latest'
+                sh'docker build . -t ${AWS_ID}.dkr.ecr.${ECR_REGION}.amazonaws.com/${APP_NAME}:${COMMIT_HASH}'
+                sh'docker tag ${AWS_ID}.dkr.ecr.${ECR_REGION}.amazonaws.com/${APP_NAME}:${COMMIT_HASH} ${AWS_ID}.dkr.ecr.${ECR_REGION}.amazonaws.com/${APP_NAME}:latest'
             }
         }
         stage('Push Image'){
