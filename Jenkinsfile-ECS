@@ -6,6 +6,7 @@ pipeline{
         //set env vars
         AWS_ID = credentials('AWS_ID')
         APP_NAME = 'my-user-microservice'
+        SERVICE_NAME = 'user-service-my'
     }
 
     stages{
@@ -70,14 +71,16 @@ pipeline{
         }
         //deploy stage
         stage('Deploy New Image'){
-            withCredentials([[$class: 'AmazonWebServicesCredentialsBinding', credentialsId: "cloudshark-Mark", accessKeyVariable: 'AWS_ACCESS_KEY_ID', secretKeyVariable: 'AWS_SECRET_ACCESS_KEY']]){
-                    //check if cluster is up
-                    if(sh'aws ecs describe-clusters --clusters $ECS_CLUSTER | grep clusterName' == sh"echo '$ECS_CLUSTER'"){
-                        sh'aws ecs update-service --cluster $ECS_CLUSTER --service $SERVICE_NAME --force-new-deployment'
-                    } else{
-                        sh"echo 'cluster not up?'"
-                    }
+            when{
+                expression{
+                    return params.CLUSTER_UP
                 }
+            }
+            steps{
+                withCredentials([[$class: 'AmazonWebServicesCredentialsBinding', credentialsId: "cloudshark-Mark", accessKeyVariable: 'AWS_ACCESS_KEY_ID', secretKeyVariable: 'AWS_SECRET_ACCESS_KEY']]){
+                    sh'aws ecs update-service --cluster $ECS_CLUSTER --service $SERVICE_NAME --force-new-deployment'
+                }
+            }
         }
     }
 
