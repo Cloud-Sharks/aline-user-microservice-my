@@ -71,14 +71,15 @@ pipeline{
         }
         //deploy stage
         stage('Deploy New Image'){
-            when{
-                expression{
-                    return params.CLUSTER_UP
-                }
-            }
             steps{
                 withCredentials([[$class: 'AmazonWebServicesCredentialsBinding', credentialsId: "cloudshark-Mark", accessKeyVariable: 'AWS_ACCESS_KEY_ID', secretKeyVariable: 'AWS_SECRET_ACCESS_KEY']]){
-                    sh'aws ecs update-service --cluster $ECS_CLUSTER --service $SERVICE_NAME --force-new-deployment'
+                    script{
+                        try {
+                            sh'aws ecs update-service --cluster $ECS_CLUSTER_MY --service $SERVICE_NAME --force-new-deployment'
+                        } catch(Exception e){
+                            echo 'Error: ' + e.toString()
+                        }
+                    }
                 }
             }
         }
