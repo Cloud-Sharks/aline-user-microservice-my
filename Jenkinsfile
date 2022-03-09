@@ -5,7 +5,6 @@ pipeline{
     environment{
         //set env vars
         AWS_ID = credentials('AWS_ID')
-        ECR_REGION = 'us-east-1'
         APP_NAME = 'my-user-microservice'
     }
 
@@ -13,7 +12,8 @@ pipeline{
         stage('Checkout'){
             steps{
                 //get branch
-                git branch: 'dev', url: 'https://github.com/markyates7748/aline-user-microservice-my.git'
+                checkout([$class: 'GitSCM', 
+                    branches: [[name: env.BRANCH_MY]]])
                 sh'git submodule init'
                 sh'git submodule update'
             }
