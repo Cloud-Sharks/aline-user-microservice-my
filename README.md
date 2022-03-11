@@ -77,12 +77,13 @@ ___
 ## Using Jenkins
 
 Ensure all environment variables are properly set
-- Minimum: BRANCH_MY, ECR_REGION_MY
+- Minimum: ECR_REGION_MY
 - ECS: ECS_CLUSTER_MY
 
 Ensure credentials are properly set
 - AWS_ID (secret text)
 - AWS credentials (AWS credentials)
+- kubeconfig file if implementing EKS
 
 Ensure SonarQube is properly set up
 1. Generate SonarQube auth token
