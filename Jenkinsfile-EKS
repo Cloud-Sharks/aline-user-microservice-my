@@ -68,6 +68,7 @@ pipeline{
                 //push image to cloud
                 withCredentials([[$class: 'AmazonWebServicesCredentialsBinding', credentialsId: "cloudshark-Mark", accessKeyVariable: 'AWS_ACCESS_KEY_ID', secretKeyVariable: 'AWS_SECRET_ACCESS_KEY']]){
                     sh'aws ecr get-login-password --region $ECR_REGION_MY | docker login --username AWS --password-stdin $AWS_ID.dkr.ecr.$ECR_REGION_MY.amazonaws.com'
+                    sh'aws eks update-kubeconfig --name ${EKS_CLUSTER_MY} --region ${EKS_REGION_MY}'
                     sh"sed -e 's|\${AWS_ID}.dkr.ecr.\${ECR_REGION_MY}.amazonaws.com/my-user-microservice:v1.0|'$AWS_ID'.dkr.ecr.'$ECR_REGION_MY'.amazonaws.com/'$APP_NAME':'$COMMIT_HASH'|g' k8s-deploy.yml | kubectl apply -f -"
                 }
             }
