@@ -5,15 +5,14 @@ pipeline{
     environment{
         //set env vars
         AWS_ID = credentials('AWS_ID')
-        ECR_REGION = 'us-east-1'
         APP_NAME = 'my-user-microservice'
+        COMMIT_HASH = sh(returnStdout: true, script: 'git rev-parse --short HEAD').trim()
     }
 
     stages{
-        stage('Checkout'){
+        stage('Initialize Core'){
             steps{
-                //get branch
-                git branch: 'dev', url: 'https://github.com/markyates7748/aline-user-microservice-my.git'
+                //get submodules
                 sh'git submodule init'
                 sh'git submodule update'
             }
@@ -47,9 +46,6 @@ pipeline{
             }
         }
         stage('Build Image'){
-            environment{
-                COMMIT_HASH = sh(returnStdout: true, script: 'git rev-parse --short HEAD').trim()
-            }
             steps{
                 //build docker image
                 sh'docker build . -t ${AWS_ID}.dkr.ecr.${ECR_REGION}.amazonaws.com/${APP_NAME}:${COMMIT_HASH}'
@@ -57,9 +53,6 @@ pipeline{
             }
         }
         stage('Push Image'){
-            environment{
-                COMMIT_HASH = sh(returnStdout: true, script: 'git rev-parse --short HEAD').trim()
-            }
             steps{
                 //push image to cloud
                 withCredentials([[$class: 'AmazonWebServicesCredentialsBinding', credentialsId: "cloudshark-Mark", accessKeyVariable: 'AWS_ACCESS_KEY_ID', secretKeyVariable: 'AWS_SECRET_ACCESS_KEY']]){

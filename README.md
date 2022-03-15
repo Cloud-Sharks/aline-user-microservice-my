@@ -74,6 +74,30 @@ For more information on tools & plugins included in this project, look at your r
 
 ___
 
+## Using Jenkins
+
+Ensure all environment variables are properly set
+- Minimum: ECR_REGION_MY
+- ECS: ECS_CLUSTER_MY
+
+Ensure credentials are properly set
+- AWS_ID (secret text)
+- AWS credentials (AWS credentials)
+- kubeconfig file if implementing EKS
+
+Ensure SonarQube is properly set up
+1. Generate SonarQube auth token
+2. Configure SonarQube webhook pointing at http:{JENKINS_HOST}/sonarqube-webhook
+3. Add Jenkins Secret Text credential with SonarQube auth token
+4. Add SonarQube Server in Jenkins > Configure System using Secret Text Credential
+
+Create new pipeline
+1. Set Github Project URL
+2. Point pipeline script at appropriate Jenkinsfile
+
+___
+
+<br>
 <br>
 
 ### Team Aline
@@ -82,4 +106,9 @@ ___
 - [Leandro Yabut](https://github.com/leandroyabut)
 - [Luan DaSilva](https://github.com/smooth-dasilva)
 
-___
+### Team Cloud-Sharks
+- [Michael Moreland](https://github.com/ssmichaelm)
+- [Steve Tan](https://github.com/SteveTanSS)
+- [David Wright](https://github.com/davidsmoothstack)
+- [Mark Yates](https://github.com/markyates7748)
+
